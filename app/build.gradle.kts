@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    id("io.objectbox")
 }
 
 android {
@@ -46,6 +47,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core)
+
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
@@ -54,6 +56,13 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
-    //liteRT-lm
-    implementation("com.google.ai.edge.litertlm:litertlm-android:latest.release")
+    // LiteRT-LM
+    implementation("com.google.ai.edge.litertlm:litertlm-android:latest-release")
+
+    // ObjectBox (Must be 'implementation' so it works in Debug mode!)
+    implementation("io.objectbox:objectbox-android:3.8.0")
+    debugImplementation("io.objectbox:objectbox-android-objectbrowser:3.8.0")
+
+    // ML Kit Text Recognition
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.0")
 }

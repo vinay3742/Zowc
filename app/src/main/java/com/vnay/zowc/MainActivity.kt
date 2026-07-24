@@ -11,7 +11,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.vnay.zowc.domain.LiteRTChatService
+import com.vnay.zowc.data.service.LiteRTChatService
 import com.vnay.zowc.ui.ChatScreen
 import com.vnay.zowc.ui.ChatViewModel
 import com.vnay.zowc.ui.theme.ZOWCTheme

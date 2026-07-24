@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.vnay.zowc.data.ChatMessage
+import com.vnay.zowc.domain.model.ChatMessage
 import com.vnay.zowc.domain.ChatService
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
@@ -22,11 +22,20 @@ class ChatViewModel(private val chatService: ChatService) : ViewModel() {
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
+    private val _initializationError = mutableStateOf<String?>(null)
+    val initializationError: State<String?> = _initializationError
+
     init {
         viewModelScope.launch {
             _isLoading.value = true
-            chatService.initialize()
-            _isLoading.value = false
+            try {
+                chatService.initialize()
+                _initializationError.value = null
+            } catch (e: Exception) {
+                _initializationError.value = e.localizedMessage ?: "Initialization Failed"
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
