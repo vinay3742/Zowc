@@ -2,6 +2,7 @@ package com.vnay.zowc.data.local
 
 import android.content.Context
 import com.vnay.zowc.data.entity.DocumentChunk
+import com.vnay.zowc.data.entity.MyObjectBox
 import io.objectbox.Box
 import io.objectbox.BoxStore
 

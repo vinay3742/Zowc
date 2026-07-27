@@ -18,7 +18,7 @@ data class DocumentChunk(
     // Note: Set 'dimensions' to match embedding output size (e.g. 384 for MobileBERT/MiniLM models)
     @HnswIndex(
         dimensions = 384,
-        distanceType = VectorDistanceType.COSINE
+        distanceType = VectorDistanceType.COSINE,
     )
     var embedding: FloatArray? = null
 ){
