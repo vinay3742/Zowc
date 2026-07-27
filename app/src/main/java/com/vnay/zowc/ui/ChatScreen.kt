@@ -1,6 +1,5 @@
 package com.vnay.zowc.ui
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,21 +8,17 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Notes
 import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.vnay.zowc.data.ChatMessage
+import com.vnay.zowc.domain.model.ChatMessage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,7 +36,7 @@ fun ChatScreen(
             listOf(
                 Color.White,
                 Color.White,
-                Color(0xFFBBDEFB).copy(alpha = 0.4f)
+                Color.DarkGray.copy(alpha = 0.4f)
             )
         )
     }
@@ -52,55 +47,7 @@ fun ChatScreen(
             .background(backgroundGradient)
     ) {
         Scaffold(
-            containerColor = Color.Transparent,
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                "ZOWC Flash",
-                                style = MaterialTheme.typography.bodyLarge.copy(
-                                    fontWeight = FontWeight.Normal,
-                                    fontSize = 18.sp,
-                                    color = Color.Black.copy(alpha = 0.8f)
-                                )
-                            )
-                            Icon(
-                                imageVector = Icons.Rounded.KeyboardArrowDown,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp).padding(start = 4.dp),
-                                tint = Color.Black.copy(alpha = 0.6f)
-                            )
-                        }
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.Notes,
-                                contentDescription = "Menu",
-                                tint = Color.Black.copy(alpha = 0.7f)
-                            )
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = { }) {
-                            Icon(
-                                imageVector = Icons.Rounded.AutoAwesome, // Sparkle icon on right
-                                contentDescription = "Sparkle",
-                                modifier = Modifier.size(22.dp),
-                                tint = Color.Black.copy(alpha = 0.7f)
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent
-                    )
-                )
-            }
+            containerColor = Color.Transparent
         ) { padding ->
             Column(
                 modifier = Modifier
@@ -161,21 +108,10 @@ fun WelcomeScreen(modifier: Modifier = Modifier) {
             Icon(
                 imageVector = Icons.Rounded.AutoAwesome,
                 contentDescription = null,
-                modifier = Modifier.size(56.dp),
-                tint = Color(0xFF4285F4) // Blue dominant like in screenshot
+                modifier = Modifier.size(72.dp),
+                tint = Color.DarkGray
             )
         }
-        
-        Spacer(Modifier.height(32.dp))
-        
-        Text(
-            text = "Hi, Ask Something!",
-            style = MaterialTheme.typography.headlineMedium.copy(
-                fontWeight = FontWeight.Normal,
-                fontSize = 28.sp,
-                color = Color.Black.copy(alpha = 0.9f)
-            )
-        )
     }
 }
 
@@ -194,7 +130,7 @@ fun ChatBubble(message: ChatMessage) {
                 imageVector = Icons.Rounded.AutoAwesome,
                 contentDescription = null,
                 modifier = Modifier.size(24.dp).padding(top = 4.dp),
-                tint = Color(0xFF4285F4)
+                tint = Color.Gray
             )
             Spacer(Modifier.width(12.dp))
         }
@@ -295,7 +231,7 @@ fun ChatInput(
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.Send,
                             contentDescription = "Send",
-                            tint = Color(0xFF4285F4)
+                            tint = Color.Gray
                         )
                     }
                 } else {
@@ -315,14 +251,14 @@ fun ChatInput(
                         Surface(
                             modifier = Modifier.size(44.dp),
                             shape = CircleShape,
-                            color = Color(0xFFE3F2FD) // Light blue circle for the waveform icon
+                            color = Color.Gray // Light blue circle for the waveform icon
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Rounded.GraphicEq, // Waveform icon
                                     contentDescription = "Visual",
                                     modifier = Modifier.size(20.dp),
-                                    tint = Color(0xFF4285F4)
+                                    tint = Color.White
                                 )
                             }
                         }

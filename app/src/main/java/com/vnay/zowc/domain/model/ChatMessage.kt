@@ -1,4 +1,4 @@
-package com.vnay.zowc.data
+package com.vnay.zowc.domain.model
 
 import java.util.UUID
 
