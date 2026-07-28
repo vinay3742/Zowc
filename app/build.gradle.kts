@@ -73,4 +73,7 @@ dependencies {
 
     // ML Kit Text Recognition
     implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.0")
+
+    // Koin
+    implementation("io.insert-koin:koin-androidx-compose:3.5.6")
 }

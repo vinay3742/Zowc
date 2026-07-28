@@ -11,20 +11,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.vnay.zowc.data.local.ObjectBox
 import com.vnay.zowc.data.service.LiteRTChatService
+import com.vnay.zowc.di.appModule
 import com.vnay.zowc.ui.ChatScreen
 import com.vnay.zowc.ui.ChatViewModel
 import com.vnay.zowc.ui.theme.ZOWCTheme
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
 
 class MainActivity : ComponentActivity() {
 
-    private val viewModel: ChatViewModel by viewModels {
-        object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return ChatViewModel(LiteRTChatService(applicationContext)) as T
-            }
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +30,6 @@ class MainActivity : ComponentActivity() {
             ZOWCTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     ChatScreen(
-                        viewModel = viewModel,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }

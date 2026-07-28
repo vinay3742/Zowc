@@ -7,11 +7,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vnay.zowc.domain.model.ChatMessage
 import com.vnay.zowc.domain.ChatService
+import com.vnay.zowc.domain.repository.DocumentRepository
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
-class ChatViewModel(private val chatService: ChatService) : ViewModel() {
+class ChatViewModel(
+    private val chatService: ChatService,
+    private val documentRepository: DocumentRepository
+) : ViewModel() {
 
     private val _messages = mutableStateListOf<ChatMessage>()
     val messages: List<ChatMessage> = _messages
