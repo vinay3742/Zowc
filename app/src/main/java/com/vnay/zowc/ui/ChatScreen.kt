@@ -1,5 +1,8 @@
 package com.vnay.zowc.ui
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -80,6 +83,7 @@ fun ChatScreen(
                     text = inputText,
                     onTextChange = viewModel::onInputTextChange,
                     onSend = viewModel::sendMessage,
+                    onImageSelected ={ uri -> viewModel.processSelectedImage(uri)},
                     enabled = !isLoading
                 )
             }
@@ -119,7 +123,7 @@ fun WelcomeScreen(modifier: Modifier = Modifier) {
 @Composable
 fun ChatBubble(message: ChatMessage) {
     val isUser = message.isUser
-    
+
     Row(
         modifier = Modifier
             .fillMaxWidth(),
@@ -172,8 +176,15 @@ fun ChatInput(
     text: String,
     onTextChange: (String) -> Unit,
     onSend: () -> Unit,
+    onImageSelected: (Uri) -> Unit,
     enabled: Boolean
 ) {
+    // Image picker launcher
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ){uri: Uri? ->
+        uri?.let { onImageSelected(it) }
+    }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -196,7 +207,10 @@ fun ChatInput(
                     .padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { }) {
+                IconButton(
+                    onClick = { imagePickerLauncher.launch("image/*") },
+                    enabled = enabled
+                ) {
                     Icon(
                         imageVector = Icons.Rounded.Add,
                         contentDescription = "Add",
@@ -209,12 +223,12 @@ fun ChatInput(
                     value = text,
                     onValueChange = onTextChange,
                     modifier = Modifier.weight(1f),
-                    placeholder = { 
+                    placeholder = {
                         Text(
                             "Ask ZOWC",
                             color = Color.Gray.copy(alpha = 0.7f),
                             style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp)
-                        ) 
+                        )
                     },
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.Transparent,
@@ -248,7 +262,7 @@ fun ChatInput(
                                 tint = Color.Black.copy(alpha = 0.7f)
                             )
                         }
-                        
+
                         Surface(
                             modifier = Modifier.size(44.dp),
                             shape = CircleShape,

@@ -1,20 +1,26 @@
 package com.vnay.zowc.ui
 
+import android.content.Context
+import android.net.Uri
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vnay.zowc.domain.model.ChatMessage
 import com.vnay.zowc.domain.ChatService
 import com.vnay.zowc.domain.repository.DocumentRepository
+import com.vnay.zowc.domain.service.TextRecognizerService
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 class ChatViewModel(
     private val chatService: ChatService,
-    private val documentRepository: DocumentRepository
+    private val documentRepository: DocumentRepository,
+    private val textRecognizerService: TextRecognizerService
 ) : ViewModel() {
 
     private val _messages = mutableStateListOf<ChatMessage>()
@@ -28,6 +34,9 @@ class ChatViewModel(
 
     private val _initializationError = mutableStateOf<String?>(null)
     val initializationError: State<String?> = _initializationError
+
+    var isProcessingDocument by mutableStateOf(false)
+        private set
 
     init {
         viewModelScope.launch {
@@ -76,6 +85,32 @@ class ChatViewModel(
                 }
         }
     }
+
+    fun processSelectedImage(uri: Uri){
+        viewModelScope.launch {
+            isProcessingDocument = true
+
+            // 1. Extract text from image using ML kit service
+            val result = textRecognizerService.extractTextFromImage(uri)
+
+            result.onSuccess { extractedText ->
+                if (extractedText.isNotBlank()){
+                    // 2. Derive a simple name from URI or timestamp
+                    val docName = "Doc_${System.currentTimeMillis()}"
+
+                    // 3. Save chunks into ObjectBox
+                    documentRepository.addDocument(
+                        name = docName,
+                        content = extractedText
+                    )
+                }
+            }.onFailure { error->
+                // Handle error or show snackbar
+            }
+            isProcessingDocument = false
+        }
+    }
+
 
     override fun onCleared() {
         super.onCleared()
