@@ -2,6 +2,7 @@ package com.vnay.zowc.di
 
 import com.vnay.zowc.data.local.ObjectBox
 import com.vnay.zowc.data.repository.DocumentRepositoryImpl
+import com.vnay.zowc.data.service.EmbeddingService
 import com.vnay.zowc.data.service.LiteRTChatService
 import com.vnay.zowc.data.service.TextRecognizerServiceImpl
 import com.vnay.zowc.domain.repository.DocumentRepository
@@ -20,6 +21,7 @@ val appModule = module {
     // 2. Services
     single<ChatService>{ LiteRTChatService(androidContext()) }
     single<TextRecognizerService>{ TextRecognizerServiceImpl(androidContext()) }
+    single<EmbeddingService> { EmbeddingService(get()) }
 
     // 3. Repository
     single<DocumentRepository>{ DocumentRepositoryImpl() }

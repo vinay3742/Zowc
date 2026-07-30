@@ -76,4 +76,7 @@ dependencies {
 
     // Koin
     implementation("io.insert-koin:koin-androidx-compose:3.5.6")
+
+    // Embedder
+    implementation("com.google.mediapipe:tasks-text:1.0.0")
 }
