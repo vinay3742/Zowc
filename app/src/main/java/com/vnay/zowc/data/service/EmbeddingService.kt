@@ -10,7 +10,7 @@ import kotlin.math.sqrt
 
 class EmbeddingService(
     private val context: Context,
-    private val modelPath: String = "text_embedder.tflite"
+    private val modelPath: String = "universal_sentence_encoder.tflite"
 ) : EmbeddingService {
 
     private var textEmbedder: TextEmbedder? = null

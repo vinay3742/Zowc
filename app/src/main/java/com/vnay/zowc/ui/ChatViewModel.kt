@@ -1,6 +1,5 @@
 package com.vnay.zowc.ui
 
-import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -66,51 +65,61 @@ class ChatViewModel(
         viewModelScope.launch {
             var fullText = ""
 
-            chatService.sendMessage(text)
+            // 1. Fetch matching vector chunks from ObjectBox
+            val matchingChunks = documentRepository.searchSimilarChunks(text, maxResult = 3)
+
+            // 2. Wrap prompt with context if found
+            val promptWithContext = if (matchingChunks.isNotEmpty()) {
+                val contextText = matchingChunks.joinToString("\n---\n") { it.text }
+                """
+                Context information:
+                $contextText
+
+                Question: $text
+                Answer using the provided context if relevant.
+                """.trimIndent()
+            } else {
+                text
+            }
+
+            // 3. Send structured prompt using your exact collection strategy
+            chatService.sendMessage(promptWithContext)
                 .onStart {
                     _isLoading.value = true
                 }
                 .onCompletion {
                     _isLoading.value = false
-                    // 1. Wait until the stream is completely finished
-                    // 2. Wrap the accumulated text into a single ChatMessage
-                    // 3. Push it to the list once, triggering exactly one UI update
-                    if (fullText.isNotBlank()){
+                    if (fullText.isNotBlank()) {
                         _messages.add(ChatMessage(text = fullText, isUser = false))
                     }
                 }
                 .collect { chunk ->
-                    // Silently gather the tokens in the background
                     fullText += chunk
                 }
         }
     }
 
-    fun processSelectedImage(uri: Uri){
+    fun processSelectedImage(uri: Uri) {
         viewModelScope.launch {
             isProcessingDocument = true
 
-            // 1. Extract text from image using ML kit service
             val result = textRecognizerService.extractTextFromImage(uri)
 
             result.onSuccess { extractedText ->
-                if (extractedText.isNotBlank()){
-                    // 2. Derive a simple name from URI or timestamp
+                if (extractedText.isNotBlank()) {
                     val docName = "Doc_${System.currentTimeMillis()}"
 
-                    // 3. Save chunks into ObjectBox
                     documentRepository.addDocument(
                         name = docName,
                         content = extractedText
                     )
                 }
-            }.onFailure { error->
-                // Handle error or show snackbar
+            }.onFailure { error ->
+                // Handle error
             }
             isProcessingDocument = false
         }
     }
-
 
     override fun onCleared() {
         super.onCleared()

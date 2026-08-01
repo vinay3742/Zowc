@@ -1,5 +1,6 @@
 package com.vnay.zowc.di
 
+import com.vnay.zowc.data.entity.DocumentChunk
 import com.vnay.zowc.data.local.ObjectBox
 import com.vnay.zowc.data.repository.DocumentRepositoryImpl
 import com.vnay.zowc.data.service.EmbeddingService
@@ -16,15 +17,15 @@ import org.koin.dsl.module
 
 val appModule = module {
     // 1. Singleton for ObjectBox store or helper
-    single { ObjectBox }
+    single { ObjectBox.store.boxFor(DocumentChunk::class.java) }
 
     // 2. Services
     single<ChatService>{ LiteRTChatService(androidContext()) }
     single<TextRecognizerService>{ TextRecognizerServiceImpl(androidContext()) }
-    single<EmbeddingService> { EmbeddingService(get()) }
+    single<EmbeddingService> { EmbeddingService(androidContext()) }
 
     // 3. Repository
-    single<DocumentRepository>{ DocumentRepositoryImpl() }
+    single<DocumentRepository>{ DocumentRepositoryImpl(box = get(), embeddingService = get()) }
 
     // 4. ViewModel (Injects both ChatService and DocumentRepository)
     viewModel{

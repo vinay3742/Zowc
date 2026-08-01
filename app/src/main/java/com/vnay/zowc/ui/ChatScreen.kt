@@ -79,6 +79,31 @@ fun ChatScreen(
                     }
                 }
 
+                // Inside ChatScreen.kt (inside Column, above ChatInput or top of screen)
+                val isProcessingDocument = viewModel.isProcessingDocument
+
+                if (isProcessingDocument) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Processing document and generating vectors...",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                    }
+                }
+
                 ChatInput(
                     text = inputText,
                     onTextChange = viewModel::onInputTextChange,
