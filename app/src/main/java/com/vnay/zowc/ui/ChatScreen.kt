@@ -108,7 +108,9 @@ fun ChatScreen(
                     text = inputText,
                     onTextChange = viewModel::onInputTextChange,
                     onSend = viewModel::sendMessage,
+                    onStop = viewModel::stopGeneration,
                     onImageSelected ={ uri -> viewModel.processSelectedImage(uri)},
+                    isLoading = isLoading,
                     enabled = !isLoading
                 )
             }
@@ -201,15 +203,17 @@ fun ChatInput(
     text: String,
     onTextChange: (String) -> Unit,
     onSend: () -> Unit,
+    onStop: () -> Unit,
     onImageSelected: (Uri) -> Unit,
+    isLoading: Boolean,
     enabled: Boolean
 ) {
     // Image picker launcher
-    val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ){uri: Uri? ->
-        uri?.let { onImageSelected(it) }
-    }
+//    val imagePickerLauncher = rememberLauncherForActivityResult(
+//        contract = ActivityResultContracts.GetContent()
+//    ){uri: Uri? ->
+//        uri?.let { onImageSelected(it) }
+//    }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -232,17 +236,17 @@ fun ChatInput(
                     .padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
-                    onClick = { imagePickerLauncher.launch("image/*") },
-                    enabled = enabled
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Add,
-                        contentDescription = "Add",
-                        modifier = Modifier.size(26.dp),
-                        tint = Color.Black.copy(alpha = 0.7f)
-                    )
-                }
+//                IconButton( // Image Picker Button
+//                    onClick = { imagePickerLauncher.launch("image/*") },
+//                    enabled = enabled
+//                ) {
+//                    Icon(
+//                        imageVector = Icons.Rounded.Add,
+//                        contentDescription = "Add",
+//                        modifier = Modifier.size(26.dp),
+//                        tint = Color.Black.copy(alpha = 0.7f)
+//                    )
+//                }
 
                 OutlinedTextField(
                     value = text,
@@ -266,7 +270,15 @@ fun ChatInput(
                     singleLine = true
                 )
 
-                if (text.isNotBlank()) {
+                if (isLoading){
+                    IconButton(onClick = onStop) {
+                        Icon(
+                            imageVector = Icons.Rounded.Stop,
+                            contentDescription = "Stop",
+                            tint = Color.Gray
+                        )
+                    }
+                } else if (text.isNotBlank()) {
                     IconButton(onClick = onSend) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.Send,

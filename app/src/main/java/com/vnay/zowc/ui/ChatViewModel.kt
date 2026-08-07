@@ -12,6 +12,8 @@ import com.vnay.zowc.domain.model.ChatMessage
 import com.vnay.zowc.domain.ChatService
 import com.vnay.zowc.domain.repository.DocumentRepository
 import com.vnay.zowc.domain.service.TextRecognizerService
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
@@ -36,6 +38,8 @@ class ChatViewModel(
 
     var isProcessingDocument by mutableStateOf(false)
         private set
+
+    private var generationJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -62,41 +66,57 @@ class ChatViewModel(
         _messages.add(ChatMessage(text = text, isUser = true))
         _inputText.value = ""
 
-        viewModelScope.launch {
+        generationJob=viewModelScope.launch {
             var fullText = ""
 
-            // 1. Fetch matching vector chunks from ObjectBox
-            val matchingChunks = documentRepository.searchSimilarChunks(text, maxResult = 3)
+            try {
+                _isLoading.value = true
 
-            // 2. Wrap prompt with context if found
-            val promptWithContext = if (matchingChunks.isNotEmpty()) {
-                val contextText = matchingChunks.joinToString("\n---\n") { it.text }
-                """
-                Context information:
-                $contextText
+                // 1. Fetch matching vector chunks from ObjectBox
+                val matchingChunks = documentRepository.searchSimilarChunks(text, maxResult = 3)
 
-                Question: $text
-                Answer using the provided context if relevant.
-                """.trimIndent()
-            } else {
-                text
-            }
-
-            // 3. Send structured prompt using your exact collection strategy
-            chatService.sendMessage(promptWithContext)
-                .onStart {
-                    _isLoading.value = true
+                // 2. Wrap prompt with context if found
+                val promptWithContext = if (matchingChunks.isNotEmpty()) {
+                    val contextText = matchingChunks.joinToString("\n---\n") { it.text }
+                    """
+                    Context information:
+                    $contextText
+    
+                    Question: $text
+                    Answer using the provided context if relevant.
+                    """.trimIndent()
+                } else {
+                    text
                 }
-                .onCompletion {
-                    _isLoading.value = false
-                    if (fullText.isNotBlank()) {
-                        _messages.add(ChatMessage(text = fullText, isUser = false))
+
+                // 3. Send structured prompt using your exact collection strategy
+                chatService.sendMessage(promptWithContext)
+                    .collect { chunk ->
+                        fullText += chunk
                     }
+            } catch (e: CancellationException) {
+                // Triggered when stop button is pressed
+            } catch (e: Exception){
+                // Prevent crashes from engine errors
+                if(fullText.isBlank()){
+                    fullText = "Error: ${e.localizedMessage}"
                 }
-                .collect { chunk ->
-                    fullText += chunk
+            } finally {
+                _isLoading.value = false
+                generationJob = null
+
+                // Add non-blank partial message to UI list
+                if (fullText.isNotBlank()) {
+                    _messages.add(ChatMessage(text = fullText, isUser = false))
                 }
+            }
         }
+    }
+
+    fun stopGeneration() {
+        generationJob?.cancel()
+        generationJob = null
+        _isLoading.value = false
     }
 
     fun processSelectedImage(uri: Uri) {
