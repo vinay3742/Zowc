@@ -33,7 +33,16 @@ fun ChatScreen(
     val messages = viewModel.messages
     val inputText = viewModel.inputText.value
     val isLoading = viewModel.isLoading.value
+    val isListening = viewModel.isListening.value
     val listState = rememberLazyListState()
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            viewModel.toggleVoiceInput()
+        }
+    }
 
     val backgroundGradient = remember {
         Brush.verticalGradient(
@@ -113,8 +122,12 @@ fun ChatScreen(
                     onTextChange = viewModel::onInputTextChange,
                     onSend = viewModel::sendMessage,
                     onStop = viewModel::stopGeneration,
+                    onVoiceClick = {
+                        permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+                    },
                     onImageSelected ={ uri -> viewModel.processSelectedImage(uri)},
                     isLoading = isLoading,
+                    isListening = isListening,
                     enabled = !isLoading
                 )
             }
@@ -208,8 +221,10 @@ fun ChatInput(
     onTextChange: (String) -> Unit,
     onSend: () -> Unit,
     onStop: () -> Unit,
+    onVoiceClick: () -> Unit,
     onImageSelected: (Uri) -> Unit,
     isLoading: Boolean,
+    isListening: Boolean,
     enabled: Boolean
 ) {
     // Image picker launcher
@@ -282,28 +297,13 @@ fun ChatInput(
                         )
                     }
                 } else {
-                    IconButton(onClick = { /* TODO: Mic */ }) {
+                    IconButton(onClick = onVoiceClick) {
                         Icon(
-                            imageVector = Icons.Rounded.Mic,
+                            imageVector = if (isListening) Icons.Rounded.MicNone else Icons.Rounded.Mic,
                             contentDescription = "Voice",
                             modifier = Modifier.size(24.dp),
-                            tint = Color.Black.copy(alpha = 0.7f)
+                            tint = if (isListening) MaterialTheme.colorScheme.primary else Color.Black.copy(alpha = 0.7f)
                         )
-                    }
-
-                    Surface(
-                        modifier = Modifier.size(44.dp),
-                        shape = CircleShape,
-                        color = Color.Gray
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.Rounded.GraphicEq,
-                                contentDescription = "Visual",
-                                modifier = Modifier.size(20.dp),
-                                tint = Color.White
-                            )
-                        }
                     }
                 }
             }

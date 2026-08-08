@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.vnay.zowc.domain.model.ChatMessage
 import com.vnay.zowc.domain.ChatService
 import com.vnay.zowc.domain.repository.DocumentRepository
+import com.vnay.zowc.domain.service.SpeechService
 import com.vnay.zowc.domain.service.TextRecognizerService
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -21,7 +22,8 @@ import kotlinx.coroutines.launch
 class ChatViewModel(
     private val chatService: ChatService,
     private val documentRepository: DocumentRepository,
-    private val textRecognizerService: TextRecognizerService
+    private val textRecognizerService: TextRecognizerService,
+    private val speechService: SpeechService
 ) : ViewModel() {
 
     private val _messages = mutableStateListOf<ChatMessage>()
@@ -32,6 +34,9 @@ class ChatViewModel(
 
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
+
+    private val _isListening = mutableStateOf(false)
+    val isListening: State<Boolean> = _isListening
 
     private val _initializationError = mutableStateOf<String?>(null)
     val initializationError: State<String?> = _initializationError
@@ -135,6 +140,29 @@ class ChatViewModel(
         generationJob?.cancel()
         generationJob = null
         _isLoading.value = false
+    }
+
+    fun toggleVoiceInput() {
+        if (_isListening.value) {
+            speechService.stopListening()
+            _isListening.value = false
+        } else {
+            _isListening.value = true
+            speechService.startListening(
+                onPartialResults = { partialText ->
+                    _inputText.value = partialText
+                },
+                onResults = { finalResult ->
+                    _inputText.value = finalResult
+                    _isListening.value = false
+                    sendMessage()
+                },
+                onError = { error ->
+                    _isListening.value = false
+                    // Optionally show error to user
+                }
+            )
+        }
     }
 
     fun processSelectedImage(uri: Uri) {
