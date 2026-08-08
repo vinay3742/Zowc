@@ -24,7 +24,12 @@ val appModule = module {
     // 2. Services
     single<ChatService>{ LiteRTChatService(androidContext()) }
     single<TextRecognizerService>{ TextRecognizerServiceImpl(androidContext()) }
-    single<EmbeddingService> { EmbeddingService(androidContext()) }
+    single<EmbeddingService> { 
+        EmbeddingService(
+            context = androidContext(),
+            modelPath = "models/universal_sentence_encoder.tflite"
+        )
+    }
     single<SpeechService> { SpeechRecognizerService(androidContext()) }
 
     // 3. Repository

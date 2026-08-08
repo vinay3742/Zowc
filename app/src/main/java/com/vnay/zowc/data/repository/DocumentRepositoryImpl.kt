@@ -16,8 +16,18 @@ class DocumentRepositoryImpl(
     override suspend fun addDocument(name: String, content: String) = withContext(Dispatchers.IO) {
         if (content.isBlank()) return@withContext
 
-        // 1. Chunk the content
-        val textChunks = content.chunked(300)
+        // 1. Improved Chunking: 500 chars with 100 char overlap
+        val chunkSize = 500
+        val overlap = 100
+        val textChunks = mutableListOf<String>()
+        
+        var start = 0
+        while (start < content.length) {
+            val end = (start + chunkSize).coerceAtMost(content.length)
+            textChunks.add(content.substring(start, end))
+            if (end == content.length) break
+            start += (chunkSize - overlap)
+        }
 
         // 2. Generate real embeddings
         val embeddingResult = embeddingService.generateEmbeddings(textChunks).getOrNull()

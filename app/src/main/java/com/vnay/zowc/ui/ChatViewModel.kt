@@ -57,6 +57,8 @@ class ChatViewModel(
             _isLoading.value = true
             try {
                 chatService.initialize()
+                // Warm up the embedding engine in the background to avoid first-message lag
+                documentRepository.searchSimilarChunks("", 1)
                 _initializationError.value = null
             } catch (e: Exception) {
                 _initializationError.value = e.localizedMessage ?: "Initialization Failed"

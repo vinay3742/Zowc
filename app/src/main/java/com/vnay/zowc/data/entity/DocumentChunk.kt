@@ -15,9 +15,9 @@ data class DocumentChunk(
     var text: String = "",
 
     // HNSW index for vector similarity search
-    // Note: Set 'dimensions' to match embedding output size (e.g. 384 for MobileBERT/MiniLM models)
+    // Note: Dimensions match universal_sentence_encoder.tflite output size
     @HnswIndex(
-        dimensions = 100,
+        dimensions = 512,
         distanceType = VectorDistanceType.COSINE,
     )
     var embedding: FloatArray? = null

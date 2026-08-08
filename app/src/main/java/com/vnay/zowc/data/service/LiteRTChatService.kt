@@ -30,15 +30,40 @@ class LiteRTChatService(private val context: Context) : ChatService {
                 copyModelFromAssets(modelFile)
             }
 
-            val config = EngineConfig(
-                modelPath = modelFile.absolutePath,
-                backend = Backend.CPU()
-            )
-            val newEngine = Engine(config)
-            newEngine.initialize()
-            engine = newEngine
-            conversation = newEngine.createConversation()
+            // Prioritize CPU backend for stability on most devices
+            // XNNPACK/CPU with 4 threads is generally very stable and fast enough for 1B-3B models
+            val successfullyInitialized = try {
+                initializeWithBackend(modelFile, Backend.CPU(threadCount = 4))
+                android.util.Log.i("LiteRTChatService", "Initialized with CPU backend (4 threads)")
+                true
+            } catch (e: Exception) {
+                android.util.Log.e("LiteRTChatService", "CPU initialization failed", e)
+                false
+            }
+
+            // Optional: Only attempt GPU if CPU fails (unlikely) or as an experimental override
+            if (!successfullyInitialized) {
+                try {
+                    initializeWithBackend(modelFile, Backend.GPU())
+                    android.util.Log.i("LiteRTChatService", "Initialized with GPU backend fallback")
+                } catch (e: Exception) {
+                    android.util.Log.e("LiteRTChatService", "All backends failed to initialize", e)
+                    throw e
+                }
+            }
         }
+    }
+
+    private fun initializeWithBackend(modelFile: File, backend: Backend) {
+        val config = EngineConfig(
+            modelPath = modelFile.absolutePath,
+            backend = backend,
+            maxNumTokens = 2048 // Optimized context window for mobile
+        )
+        val newEngine = Engine(config)
+        newEngine.initialize()
+        engine = newEngine
+        conversation = newEngine.createConversation()
     }
 
     private fun copyModelFromAssets(destFile: File) {
