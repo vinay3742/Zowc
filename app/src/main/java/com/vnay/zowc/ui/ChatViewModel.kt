@@ -15,6 +15,9 @@ import com.vnay.zowc.domain.service.SpeechService
 import com.vnay.zowc.domain.service.TextRecognizerService
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
@@ -40,6 +43,9 @@ class ChatViewModel(
 
     private val _initializationError = mutableStateOf<String?>(null)
     val initializationError: State<String?> = _initializationError
+
+    private val _uiEvent = MutableSharedFlow<String>()
+    val uiEvent: SharedFlow<String> = _uiEvent.asSharedFlow()
 
     var isProcessingDocument by mutableStateOf(false)
         private set
@@ -159,7 +165,9 @@ class ChatViewModel(
                 },
                 onError = { error ->
                     _isListening.value = false
-                    // Optionally show error to user
+                    viewModelScope.launch {
+                        _uiEvent.emit(error)
+                    }
                 }
             )
         }

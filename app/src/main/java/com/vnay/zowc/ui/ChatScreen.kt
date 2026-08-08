@@ -30,11 +30,16 @@ fun ChatScreen(
     viewModel: ChatViewModel = koinViewModel(),
     modifier: Modifier = Modifier
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
     val messages = viewModel.messages
     val inputText = viewModel.inputText.value
-    val isLoading = viewModel.isLoading.value
-    val isListening = viewModel.isListening.value
     val listState = rememberLazyListState()
+
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -60,13 +65,29 @@ fun ChatScreen(
             .background(backgroundGradient)
     ) {
         Scaffold(
-            containerColor = Color.Transparent
+            containerColor = Color.Transparent,
+            snackbarHost = { SnackbarHost(snackbarHostState) }
         ) { padding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
             ) {
+                val initializationError = viewModel.initializationError.value
+                if (initializationError != null) {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.errorContainer
+                    ) {
+                        Text(
+                            text = initializationError,
+                            modifier = Modifier.padding(16.dp),
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+
                 if (messages.isEmpty()) {
                     WelcomeScreen(modifier = Modifier.weight(1f))
                 } else {
@@ -84,8 +105,10 @@ fun ChatScreen(
                         ) { message ->
                             ChatBubble(message)
                         }
-                        if (isLoading && (messages.isEmpty() || messages.last().isUser)) {
-                            item {
+                        
+                        item {
+                            val isLoading = viewModel.isLoading.value
+                            if (isLoading && (messages.isEmpty() || messages.last().isUser)) {
                                 TypingIndicator()
                             }
                         }
@@ -116,6 +139,9 @@ fun ChatScreen(
                         )
                     }
                 }
+
+                val isLoading = viewModel.isLoading.value
+                val isListening = viewModel.isListening.value
 
                 ChatInput(
                     text = inputText,
