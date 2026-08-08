@@ -190,5 +190,8 @@ class ChatViewModel(
     override fun onCleared() {
         super.onCleared()
         chatService.close()
+        documentRepository.close()
+        textRecognizerService.close()
+        speechService.stopListening()
     }
 }

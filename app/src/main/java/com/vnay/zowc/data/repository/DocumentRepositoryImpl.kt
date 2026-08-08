@@ -48,4 +48,8 @@ class DocumentRepositoryImpl(
             .build()
             .find()
     }
+
+    override fun close() {
+        embeddingService.close()
+    }
 }

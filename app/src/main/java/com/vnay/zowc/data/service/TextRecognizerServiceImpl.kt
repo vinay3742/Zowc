@@ -28,4 +28,8 @@ class TextRecognizerServiceImpl(private val context: Context) : TextRecognizerSe
                 continuation.resume(Result.failure(e))
             }
         }
+
+    override fun close() {
+        recognizer.close()
+    }
 }

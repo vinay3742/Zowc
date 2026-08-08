@@ -67,4 +67,9 @@ class EmbeddingService(
         val denominator = sqrt(normA) * sqrt(normB)
         return if (denominator > 0) dotProduct / denominator else 0f
     }
+
+    override fun close() {
+        textEmbedder?.close()
+        textEmbedder = null
+    }
 }
