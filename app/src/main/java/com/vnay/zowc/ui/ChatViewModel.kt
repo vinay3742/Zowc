@@ -66,7 +66,7 @@ class ChatViewModel(
         _messages.add(ChatMessage(text = text, isUser = true))
         _inputText.value = ""
 
-        generationJob=viewModelScope.launch {
+        generationJob = viewModelScope.launch {
             var fullText = ""
 
             try {
@@ -89,27 +89,45 @@ class ChatViewModel(
                     text
                 }
 
-                // 3. Send structured prompt using your exact collection strategy
+                // 3. Send structured prompt and stream updates to UI with throttling
+                var lastUpdateTimestamp = 0L
+                val throttleInterval = 60L // Update UI every 60ms (~16 FPS)
+
                 chatService.sendMessage(promptWithContext)
+                    .onCompletion {
+                        // Ensure the final state is always pushed to UI
+                        updateLastAiMessage(fullText)
+                    }
                     .collect { chunk ->
                         fullText += chunk
+                        
+                        val currentTime = System.currentTimeMillis()
+                        if (currentTime - lastUpdateTimestamp >= throttleInterval) {
+                            updateLastAiMessage(fullText)
+                            lastUpdateTimestamp = currentTime
+                        }
                     }
             } catch (e: CancellationException) {
                 // Triggered when stop button is pressed
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 // Prevent crashes from engine errors
-                if(fullText.isBlank()){
-                    fullText = "Error: ${e.localizedMessage}"
-                }
+                val errorMsg = if (fullText.isBlank()) "Error: ${e.localizedMessage}" else "$fullText\n\n[Error: ${e.localizedMessage}]"
+                updateLastAiMessage(errorMsg)
             } finally {
                 _isLoading.value = false
                 generationJob = null
-
-                // Add non-blank partial message to UI list
-                if (fullText.isNotBlank()) {
-                    _messages.add(ChatMessage(text = fullText, isUser = false))
-                }
             }
+        }
+    }
+
+    private fun updateLastAiMessage(text: String) {
+        val lastMessage = _messages.lastOrNull()
+        if (lastMessage != null && !lastMessage.isUser) {
+            // Replace the last AI message with updated text
+            _messages[_messages.size - 1] = lastMessage.copy(text = text)
+        } else {
+            // Add a new AI message if the last one was from user
+            _messages.add(ChatMessage(text = text, isUser = false))
         }
     }
 

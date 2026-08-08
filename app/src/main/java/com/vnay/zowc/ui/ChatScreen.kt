@@ -66,9 +66,13 @@ fun ChatScreen(
                             .weight(1f)
                             .fillMaxWidth(),
                         contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        state = listState
                     ) {
-                        items(messages) { message ->
+                        items(
+                            items = messages,
+                            key = { it.id }
+                        ) { message ->
                             ChatBubble(message)
                         }
                         if (isLoading && (messages.isEmpty() || messages.last().isUser)) {
@@ -214,63 +218,54 @@ fun ChatInput(
 //    ){uri: Uri? ->
 //        uri?.let { onImageSelected(it) }
 //    }
-    Box(
+
+    TextField(
+        value = text,
+        onValueChange = onTextChange,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 20.dp)
             .navigationBarsPadding()
             .imePadding()
-    ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(68.dp),
-            shape = RoundedCornerShape(34.dp),
-            color = Color.White,
-            shadowElevation = 0.5.dp, // Subtle shadow like in screenshot
-            border = androidx.compose.foundation.BorderStroke(0.5.dp, Color.LightGray.copy(alpha = 0.3f))
-        ) {
+            .heightIn(min = 68.dp),
+        placeholder = {
+            Text(
+                "Ask ZOWC",
+                color = Color.Gray.copy(alpha = 0.7f),
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp)
+            )
+        },
+        shape = RoundedCornerShape(34.dp),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White,
+            disabledContainerColor = Color.White,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent
+        ),
+        enabled = enabled,
+        singleLine = true,
+//        leadingIcon = {
+//            IconButton( // Image Picker Button
+//                onClick = { imagePickerLauncher.launch("image/*") },
+//                enabled = enabled
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Rounded.Add,
+//                    contentDescription = "Add",
+//                    modifier = Modifier.size(26.dp),
+//                    tint = Color.Black.copy(alpha = 0.7f)
+//                )
+//            }
+//        },
+        trailingIcon = {
             Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.padding(end = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-//                IconButton( // Image Picker Button
-//                    onClick = { imagePickerLauncher.launch("image/*") },
-//                    enabled = enabled
-//                ) {
-//                    Icon(
-//                        imageVector = Icons.Rounded.Add,
-//                        contentDescription = "Add",
-//                        modifier = Modifier.size(26.dp),
-//                        tint = Color.Black.copy(alpha = 0.7f)
-//                    )
-//                }
-
-                OutlinedTextField(
-                    value = text,
-                    onValueChange = onTextChange,
-                    modifier = Modifier.weight(1f),
-                    placeholder = {
-                        Text(
-                            "Ask ZOWC",
-                            color = Color.Gray.copy(alpha = 0.7f),
-                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp)
-                        )
-                    },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        disabledContainerColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-                    enabled = enabled,
-                    singleLine = true
-                )
-
-                if (isLoading){
+                if (isLoading) {
                     IconButton(onClick = onStop) {
                         Icon(
                             imageVector = Icons.Rounded.Stop,
@@ -287,37 +282,31 @@ fun ChatInput(
                         )
                     }
                 } else {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    IconButton(onClick = { /* TODO: Mic */ }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Mic,
+                            contentDescription = "Voice",
+                            modifier = Modifier.size(24.dp),
+                            tint = Color.Black.copy(alpha = 0.7f)
+                        )
+                    }
+
+                    Surface(
+                        modifier = Modifier.size(44.dp),
+                        shape = CircleShape,
+                        color = Color.Gray
                     ) {
-                        IconButton(onClick = { }) {
+                        Box(contentAlignment = Alignment.Center) {
                             Icon(
-                                imageVector = Icons.Rounded.Mic,
-                                contentDescription = "Voice",
-                                modifier = Modifier.size(24.dp),
-                                tint = Color.Black.copy(alpha = 0.7f)
+                                imageVector = Icons.Rounded.GraphicEq,
+                                contentDescription = "Visual",
+                                modifier = Modifier.size(20.dp),
+                                tint = Color.White
                             )
                         }
-
-                        Surface(
-                            modifier = Modifier.size(44.dp),
-                            shape = CircleShape,
-                            color = Color.Gray // Light blue circle for the waveform icon
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Rounded.GraphicEq, // Waveform icon
-                                    contentDescription = "Visual",
-                                    modifier = Modifier.size(20.dp),
-                                    tint = Color.White
-                                )
-                            }
-                        }
-                        Spacer(Modifier.width(2.dp))
                     }
                 }
             }
         }
-    }
+    )
 }
